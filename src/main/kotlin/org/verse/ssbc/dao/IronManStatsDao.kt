@@ -1,4 +1,7 @@
 package org.verse.ssbc.dao
 
-class IronManStatsDao {
+import org.jetbrains.exposed.sql.Table
+
+sealed class IronManStatsDao {
+
 }

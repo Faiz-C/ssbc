@@ -18,11 +18,23 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    implementation("ca.gosyer:accompanist-pager:0.24.4")
-    implementation("ca.gosyer:accompanist-pager-indicators:0.24.4")
+
+    // Database
     implementation("org.xerial:sqlite-jdbc:3.36.0.3")
+    implementation("org.jetbrains.exposed:exposed-core:0.38.1")
+    implementation("org.jetbrains.exposed:exposed-dao:0.38.1")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.38.1")
+
+    // Compose
     implementation(compose.desktop.currentOs)
 
+    // Accompanist
+    implementation("ca.gosyer:accompanist-pager:0.24.4")
+    implementation("ca.gosyer:accompanist-pager-indicators:0.24.4")
+
+    // SLF4J + Logging
+    implementation("org.slf4j:slf4j-api:1.7.36")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.2")
 }
 
 tasks.test {
