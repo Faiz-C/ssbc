@@ -38,8 +38,8 @@ fun bootstrapDb() {
     // This creates if they don't exist
     SchemaUtils.create(
       Tables.Character,
-      Tables.IronManRun,
-      Tables.IronManRunCharacter
+      Tables.IronMan,
+      Tables.IronManCharacter
     )
 
     script.execAndDiscard()

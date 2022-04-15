@@ -1,6 +1,7 @@
 package org.verse.ssbc.dao
 
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.javatime.datetime
 
 sealed class Tables private constructor() {
 
@@ -16,16 +17,16 @@ sealed class Tables private constructor() {
     override val primaryKey = PrimaryKey(name, name = "CHARACTER_PK")
   }
 
-  internal object IronManRun: Table() {
+  internal object IronMan: Table() {
     val id = integer("ID").autoIncrement()
-    val startTime = long("START_TIME")
-    val endTime = long("END_TIME")
+    val startTime = datetime("START_TIME")
+    val endTime = datetime("END_TIME")
 
     override val primaryKey = PrimaryKey(id, name = "IRONMAN_RUN_PK")
   }
 
-  internal object IronManRunCharacter: Table() {
-    val ironManId = integer("IRONMAN_ID") references IronManRun.id
+  internal object IronManCharacter: Table() {
+    val ironManId = integer("IRONMAN_ID") references IronMan.id
     val characterName = varchar("CHARACTER_NAME", 20) references Character.name
 
     override val primaryKey = PrimaryKey(ironManId, characterName, name = "IRONMAN_RUN_CHARACTER_PK")
