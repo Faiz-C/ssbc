@@ -1,4 +1,4 @@
-package org.verse.ssbc.views
+package org.verse.ssbc.ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable

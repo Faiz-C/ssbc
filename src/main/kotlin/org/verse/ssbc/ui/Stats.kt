@@ -1,4 +1,4 @@
-package org.verse.ssbc.views
+package org.verse.ssbc.ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
-class Options : View {
+class Stats : View {
 
   @Composable
   @Preview
@@ -22,11 +22,11 @@ class Options : View {
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .background(Color.Blue)
+        .background(Color.Black)
         .wrapContentSize(Alignment.Center)
     ) {
       Text(
-        text = "Options View",
+        text = "Stats View",
         fontWeight = FontWeight.Bold,
         color = Color.White,
         modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -36,5 +36,6 @@ class Options : View {
     }
   }
 
-  override fun name() = "Options"
+  override fun name() = "Stats"
+
 }

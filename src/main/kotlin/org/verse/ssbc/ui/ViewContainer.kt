@@ -1,12 +1,16 @@
-package org.verse.ssbc.views
+package org.verse.ssbc.ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -37,25 +41,33 @@ class ViewContainer(private val views: List<View>) : View {
 
     TabRow(
       selectedTabIndex = pagerState.currentPage,
-      backgroundColor = Color.Magenta,
-      contentColor = Color.White,
+      backgroundColor = MaterialTheme.colors.primary,
       indicator = {
-        TabRowDefaults.Indicator(Modifier.pagerTabIndicatorOffset(pagerState, it))
+        TabRowDefaults.Indicator(
+          modifier = Modifier.pagerTabIndicatorOffset(pagerState, it),
+          height = 0.5.dp,
+          color = MaterialTheme.colors.secondary
+        )
       }
     ) {
       this.views.forEachIndexed { i, view ->
         Tab(
-          text = { Text(view.name()) },
+          text = {
+            Text(
+              text = view.name(),
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colors.onPrimary
+            )
+          },
           selected = pagerState.currentPage == i,
           onClick = {
             scope.launch {
               pagerState.scrollToPage(i)
             }
-          }
+          },
         )
       }
     }
   }
-
 
 }
