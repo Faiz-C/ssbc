@@ -12,16 +12,21 @@ class IronManService(
 ) {
 
   private val characters: Set<SmashCharacter> = characterDao.getAll().toSet()
-  private val current: IronMan = IronMan()
+
+  var inProgress: Boolean = false
+  var currentCharacter: SmashCharacter = this.characters.first()
+  val current: IronMan = IronMan()
 
   fun startRun(): IronMan {
     this.current.startTime = LocalDateTime.now()
     this.current.charactersPlayed.clear()
+    this.inProgress = true
     return current
   }
 
   fun stopRun() {
     this.current.endTime = LocalDateTime.now()
+    this.inProgress = false
     this.ironManDao.insert(this.current)
   }
 
@@ -31,10 +36,14 @@ class IronManService(
     this.startRun()
   }
 
-  fun nextCharacter(): SmashCharacter {
-    val character: SmashCharacter = this.characters.minus(this.current.charactersPlayed).random()
-    this.current.charactersPlayed.add(character)
-    return character
+  fun next(): SmashCharacter {
+    this.currentCharacter = this.characters.minus(this.current.charactersPlayed).random()
+    this.current.charactersPlayed.add(this.currentCharacter)
+    return this.currentCharacter
+  }
+
+  fun complete(): Boolean {
+    return this.characters.size == this.current.charactersPlayed.size
   }
 
   fun getPastRuns(): List<IronMan> {

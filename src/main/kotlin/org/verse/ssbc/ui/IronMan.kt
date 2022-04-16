@@ -1,14 +1,29 @@
 package org.verse.ssbc.ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.*
 import org.verse.ssbc.dao.CharacterDao
 import org.verse.ssbc.dao.IronManDao
+import org.verse.ssbc.model.SmashCharacter
 import org.verse.ssbc.service.IronManService
 
 class IronMan : View {
@@ -19,7 +34,6 @@ class IronMan : View {
 
   private val ironManService: IronManService = IronManService(CharacterDao(), IronManDao())
 
-  // Move the Sections to their own methods
   @Composable
   @Preview
   override fun render() {
@@ -52,20 +66,39 @@ class IronMan : View {
     scope.apply {
       Card(
         modifier = Modifier.fillMaxSize()
-          .weight(1f)
+          .weight(0.65f)
           .padding(end = BASE_PADDING)
       ) {
+
         Column(
           modifier = Modifier.wrapContentSize()
             .fillMaxSize()
         ) {
+          val character = ironManService.currentCharacter
+
           Text(
-            text = "Section 1.1",
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            text = "Current Character",
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            fontWeight = FontWeight.Medium,
+            fontStyle = FontStyle.Italic,
+            fontSize = 24.sp
           )
+
+          CharacterLogo(
+            imageBitmap = character.imageBitmap,
+            modifier =Modifier.align(Alignment.CenterHorizontally)
+              .padding(top = BASE_PADDING * 6, bottom = BASE_PADDING * 2)
+              .border(
+                BorderStroke(2.dp, Color(0xFF911901)), // Change this colour
+                RoundedCornerShape(20.dp)
+              )
+          )
+
           Text(
-            text = "Section 1.2",
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            text = character.name,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 24.sp
           )
         }
       }
@@ -109,42 +142,113 @@ class IronMan : View {
           modifier = Modifier.wrapContentSize()
             .fillMaxSize()
         ) {
+
+          val listState = remember { mutableStateListOf<SmashCharacter>() }
+
           Text(
-            text = "Section 3.1",
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            text = "Current Run Status",
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            fontWeight = FontWeight.Medium,
+            fontStyle = FontStyle.Italic,
+            fontSize = 24.sp
           )
-          Text(
-            text = "Section 3.2",
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-          )
-          /*
-          val textState = remember { mutableStateOf(TextFieldValue()) }
-          TextField(
-          value = textState.value,
-          onValueChange = {
-            textState.value = it
-          },
-          modifier = Modifier.align(Alignment.CenterVertically)
-            .background(Color.White)
-          )
-          Spacer(Modifier.size(padding))
-          Button(
-          modifier = Modifier.align(Alignment.CenterVertically),
-          onClick = {
-            textState.value = TextFieldValue(ironManService.getPastRuns().map {
-              it.id
-            }.joinToString(","))
-          }
+
+          // Need to fix update on mutation
+          LazyColumn(
+            modifier = Modifier.wrapContentSize()
+              .weight(1f)
+              .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(BASE_PADDING)
           ) {
-            Text("Past Runs")
+            repeat(30) {
+              listState.add(SmashCharacter("Fox", "fox"))
+            }
+            items(listState) {
+              SmashCharacterListItem(it)
+            }
           }
-          */
+
+          Row(
+            modifier = Modifier.fillMaxSize()
+              .weight(0.6f)
+              .padding(top = BASE_PADDING * 2),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+          ) {
+            val textState = remember { mutableStateOf("Start") }
+
+            Button(
+              modifier = Modifier.align(Alignment.CenterVertically),
+              onClick = {
+                if (!ironManService.inProgress) {
+                  ironManService.startRun()
+                  textState.value = "Stop"
+                } else {
+                  ironManService.stopRun()
+                  textState.value = "Start"
+                }
+              }
+            ) {
+              Text(text = textState.value)
+            }
+
+            // Want to only enable this if we are in progress
+            Button(
+              modifier = Modifier.align(Alignment.CenterVertically)
+                .padding(start = BASE_PADDING),
+              onClick = {
+                listState.add(ironManService.next())
+              },
+            ) {
+              Text("Next")
+            }
+
+            Button(
+              modifier = Modifier.align(Alignment.CenterVertically)
+                .padding(start = BASE_PADDING),
+              onClick = {
+                listState.clear()
+                ironManService.resetRun()
+                textState.value = "Start"
+              }
+            ) {
+              Text("Reset")
+            }
+          }
         }
       }
     }
   }
 
+  @Composable
+  private fun SmashCharacterListItem(character: SmashCharacter) {
+    Row {
+      CharacterLogo(
+        imageBitmap = character.imageBitmap,
+        modifier = Modifier
+          .align(Alignment.CenterVertically)
+          .size(45.dp)
+          .weight(1f)
+          .fillMaxSize()
+      )
+      Text(
+        text = character.name,
+        modifier = Modifier.fillMaxSize()
+          .weight(1f),
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp
+      )
+    }
+  }
 
+  @Composable
+  private fun CharacterLogo(imageBitmap: ImageBitmap, modifier: Modifier) {
+    Image(
+      bitmap = imageBitmap,
+      contentDescription = "Character Logo",
+      modifier = modifier
+    )
+  }
 
   override fun name() = "Iron Man"
 

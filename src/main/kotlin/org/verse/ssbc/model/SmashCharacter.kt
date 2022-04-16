@@ -1,21 +1,23 @@
 package org.verse.ssbc.model
 
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import org.jetbrains.skia.Image
 import java.io.File
 
 data class SmashCharacter(
-  var name: String = "",
-  var imageName: String = "",
-  var in64: Boolean = false,
-  var inMelee: Boolean = false,
-  var inBrawl: Boolean = false,
-  var inWiiU: Boolean = false,
-  var inUltimate: Boolean = false,
-  var image: Image = getImageFromResources(imageName)
+  val name: String = "",
+  val imageName: String = "",
+  val in64: Boolean = false,
+  val inMelee: Boolean = false,
+  val inBrawl: Boolean = false,
+  val inWiiU: Boolean = false,
+  val inUltimate: Boolean = false,
+  val imageBitmap: ImageBitmap = getImageFromResources(imageName)
 )
 
-private fun getImageFromResources(name: String): Image {
+private fun getImageFromResources(name: String): ImageBitmap {
   val file = File("src/main/resources/images/$name.png")
-  return Image.makeFromEncoded(file.readBytes())
+  return Image.makeFromEncoded(file.readBytes()).toComposeImageBitmap()
 }
 
