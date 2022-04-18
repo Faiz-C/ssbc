@@ -8,11 +8,7 @@ sealed class Tables private constructor() {
   internal object Character: Table() {
     val name = varchar("NAME", 20)
     val imageName = varchar("IMAGE_NAME", 20)
-    val in64 = bool("64")
-    val inMelee = bool("MELEE")
-    val inBrawl = bool("BRAWL")
-    val inWiiU = bool("WII_U")
-    val inUltimate = bool("ULTIMATE")
+    val fightersPass = integer("FIGHTERS_PASS") // 0 = Base Game, 1 = Fighters Pass 1, 2 = Fighters Pass 2
 
     override val primaryKey = PrimaryKey(name, name = "CHARACTER_PK")
   }

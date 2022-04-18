@@ -3,7 +3,6 @@ package org.verse.ssbc.ui
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -52,11 +50,12 @@ class IronMan : View {
       }
       Row(
         modifier = Modifier.fillMaxWidth()
-          .weight(1f),
+          .weight(0.8f),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
       ) {
         timerDisplay(this)
+        optionsDisplay(this)
       }
     }
   }
@@ -69,36 +68,28 @@ class IronMan : View {
           .weight(0.65f)
           .padding(end = BASE_PADDING)
       ) {
-
         Column(
           modifier = Modifier.wrapContentSize()
             .fillMaxSize()
         ) {
           val character = ironManService.currentCharacter
 
-          Text(
+          title(
             text = "Current Character",
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            fontWeight = FontWeight.Medium,
-            fontStyle = FontStyle.Italic,
-            fontSize = 24.sp
+            modifier = Modifier.align(Alignment.CenterHorizontally)
           )
 
-          CharacterLogo(
+          characterLogo(
             imageBitmap = character.imageBitmap,
-            modifier =Modifier.align(Alignment.CenterHorizontally)
-              .padding(top = BASE_PADDING * 6, bottom = BASE_PADDING * 2)
-              .border(
-                BorderStroke(2.dp, MaterialTheme.colors.primaryVariant), // Change this colour
-                RoundedCornerShape(20.dp)
-              )
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+              .fillMaxSize(0.75f)
           )
 
           Text(
             text = character.name,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             fontWeight = FontWeight.SemiBold,
-            fontSize = 24.sp
+            fontSize = 20.sp
           )
         }
       }
@@ -131,6 +122,31 @@ class IronMan : View {
   }
 
   @Composable
+  private fun optionsDisplay(scope: RowScope) {
+    scope.apply {
+      Card(
+        modifier = Modifier.fillMaxSize()
+          .weight(0.4f)
+          .padding(top = BASE_PADDING * 2, start = BASE_PADDING * 2)
+      ) {
+        Column(
+          modifier = Modifier.wrapContentSize()
+            .fillMaxSize()
+        ) {
+          Text(
+            text = "Section 3.1",
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+          )
+          Text(
+            text = "Section 3.2",
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+          )
+        }
+      }
+    }
+  }
+
+  @Composable
   private fun statusDisplay(scope: RowScope) {
     scope.apply {
       Card(
@@ -143,16 +159,13 @@ class IronMan : View {
             .fillMaxSize()
         ) {
 
-          val listState = remember { mutableStateListOf<SmashCharacter>() }
-
-          Text(
-            text = "Current Run Status",
+          title(
+            text = "Played",
             modifier = Modifier.align(Alignment.CenterHorizontally)
-              .padding(bottom = BASE_PADDING * 2),
-            fontWeight = FontWeight.Medium,
-            fontStyle = FontStyle.Italic,
-            fontSize = 24.sp
+              .padding(bottom = BASE_PADDING * 2)
           )
+
+          val listState = remember { mutableStateListOf<SmashCharacter>() }
 
           charactersPlayedStatus(this, listState)
 
@@ -169,25 +182,13 @@ class IronMan : View {
               onClick = {
                 if (!ironManService.inProgress) {
                   ironManService.startRun()
-                  textState.value = "Stop"
+                  textState.value = "Next"
                 } else {
-                  ironManService.stopRun()
-                  textState.value = "Start"
+                  listState.add(ironManService.next())
                 }
               }
             ) {
               Text(text = textState.value)
-            }
-
-            // Want to only enable this if we are in progress
-            Button(
-              modifier = Modifier.align(Alignment.CenterVertically)
-                .padding(start = BASE_PADDING),
-              onClick = {
-                listState.add(ironManService.next())
-              },
-            ) {
-              Text("Next")
             }
 
             Button(
@@ -218,7 +219,7 @@ class IronMan : View {
             BorderStroke(3.dp, MaterialTheme.colors.primaryVariant),
             RoundedCornerShape(10.dp)
           )
-          .fillMaxWidth(0.8f)
+          .fillMaxWidth(0.9f)
           .fillMaxHeight()
       ) {
         LazyColumn(
@@ -239,18 +240,18 @@ class IronMan : View {
     Row (
       modifier = Modifier.fillMaxSize()
     ) {
-      CharacterLogo(
+      characterLogo(
         imageBitmap = character.imageBitmap,
         modifier = Modifier
           .align(Alignment.CenterVertically)
-          .size(45.dp)
-          .weight(0.1f)
+          .weight(0.12f)
           .fillMaxSize()
       )
       Text(
         text = character.name,
         modifier = Modifier.fillMaxSize()
           .weight(1f)
+          .padding(start = BASE_PADDING * 3)
           .align(Alignment.CenterVertically),
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp
@@ -259,11 +260,22 @@ class IronMan : View {
   }
 
   @Composable
-  private fun CharacterLogo(imageBitmap: ImageBitmap, modifier: Modifier) {
+  private fun characterLogo(imageBitmap: ImageBitmap, modifier: Modifier) {
     Image(
       bitmap = imageBitmap,
       contentDescription = "Character Logo",
       modifier = modifier
+    )
+  }
+
+  @Composable
+  private fun title(text: String, modifier: Modifier) {
+    Text(
+      text = text,
+      modifier = modifier,
+      fontWeight = FontWeight.Medium,
+      fontStyle = FontStyle.Italic,
+      fontSize = 24.sp
     )
   }
 

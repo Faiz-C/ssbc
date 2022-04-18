@@ -24,7 +24,7 @@ private fun String.execAndDiscard() {
 }
 
 fun bootstrapDb() {
-  // Create DB if doesn't exist
+  // Create DB if it doesn't exist
   setupDatabaseFile()
 
   // Connect to DB

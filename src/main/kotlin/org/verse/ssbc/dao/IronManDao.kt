@@ -55,11 +55,7 @@ class IronManDao {
                 SmashCharacter(
                   name = result[characterTable.name],
                   imageName = result[characterTable.imageName],
-                  in64 = result[characterTable.in64],
-                  inMelee = result[characterTable.inMelee],
-                  inBrawl = result[characterTable.inBrawl],
-                  inWiiU = result[characterTable.inWiiU],
-                  inUltimate = result[characterTable.inUltimate]
+                  fightersPass = result[characterTable.fightersPass]
                 )
               )
             }

@@ -8,11 +8,7 @@ import java.io.File
 data class SmashCharacter(
   val name: String = "",
   val imageName: String = "",
-  val in64: Boolean = false,
-  val inMelee: Boolean = false,
-  val inBrawl: Boolean = false,
-  val inWiiU: Boolean = false,
-  val inUltimate: Boolean = false,
+  val fightersPass: Int = 0, // 0 = Base Game
   val imageBitmap: ImageBitmap = getImageFromResources(imageName)
 )
 

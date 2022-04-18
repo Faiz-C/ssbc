@@ -14,7 +14,7 @@ fun main() {
   bootstrapDb()
   singleWindowApplication(
     title = "SSB Challenge",
-    state = WindowState(width = 1200.dp, height = 800.dp),
+    state = WindowState(width = 800.dp, height = 600.dp),
     resizable = false
   ) {
     MaterialTheme(
