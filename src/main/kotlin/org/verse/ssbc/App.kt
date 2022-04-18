@@ -7,7 +7,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import org.verse.ssbc.utils.bootstrapDb
 import org.verse.ssbc.ui.IronMan
-import org.verse.ssbc.ui.Options
 import org.verse.ssbc.ui.Stats
 import org.verse.ssbc.ui.ViewContainer
 
@@ -20,16 +19,17 @@ fun main() {
   ) {
     MaterialTheme(
       colors = darkColors(
-        primary = Color(0xFF2C387E), // Standard Dark theme blue primary
-        secondary = Color(0xFFAB003C), // Standard Dark theme magenta like secondary
-        error = Color(0xFFD32F2F), // Standard Dark theme dark red error
+        primary = Color(0xFF3F51B5),
+        primaryVariant = Color(0xFF2C387E),
+        secondary = Color(0xFFF50057),
+        secondaryVariant = Color(0xFFAB003C),
+        error = Color(0xFFD32F2F),
         onPrimary = Color.White
       )
     ) {
       ViewContainer(listOf(
         IronMan(),
-        Stats(),
-        Options()
+        Stats()
       )).render()
     }
   }
