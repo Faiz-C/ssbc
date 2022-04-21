@@ -3,18 +3,18 @@ package org.verse.ssbc.ui
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -45,8 +45,9 @@ class IronMan : View {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
       ) {
-        characterDisplay(this)
-        statusDisplay(this)
+        val characterState = remember { mutableStateOf(ironManService.currentCharacter) }
+        characterDisplay(this, characterState)
+        statusDisplay(this, characterState)
       }
       Row(
         modifier = Modifier.fillMaxWidth()
@@ -61,7 +62,7 @@ class IronMan : View {
   }
 
   @Composable
-  private fun characterDisplay(scope: RowScope) {
+  private fun characterDisplay(scope: RowScope, characterState: MutableState<SmashCharacter>) {
     scope.apply {
       Card(
         modifier = Modifier.fillMaxSize()
@@ -72,21 +73,19 @@ class IronMan : View {
           modifier = Modifier.wrapContentSize()
             .fillMaxSize()
         ) {
-          val character = ironManService.currentCharacter
-
           title(
             text = "Current Character",
             modifier = Modifier.align(Alignment.CenterHorizontally)
           )
 
           characterLogo(
-            imageBitmap = character.imageBitmap,
+            imageBitmap = characterState.value.imageBitmap,
             modifier = Modifier.align(Alignment.CenterHorizontally)
               .fillMaxSize(0.75f)
           )
 
           Text(
-            text = character.name,
+            text = characterState.value.name,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             fontWeight = FontWeight.SemiBold,
             fontSize = 20.sp
@@ -147,7 +146,7 @@ class IronMan : View {
   }
 
   @Composable
-  private fun statusDisplay(scope: RowScope) {
+  private fun statusDisplay(scope: RowScope, characterState: MutableState<SmashCharacter>) {
     scope.apply {
       Card(
         modifier = Modifier.fillMaxSize()
@@ -184,7 +183,9 @@ class IronMan : View {
                   ironManService.startRun()
                   textState.value = "Next"
                 } else {
-                  listState.add(ironManService.next())
+                  val next: SmashCharacter = ironManService.next()
+                  characterState.value = next
+                  listState.add(next)
                 }
               }
             ) {
@@ -215,11 +216,13 @@ class IronMan : View {
         modifier = Modifier.wrapContentSize()
           .weight(1f)
           .align(Alignment.CenterHorizontally)
+          .background(Color.Blue)
+          .clip(RoundedCornerShape(10.dp))
           .border(
             BorderStroke(3.dp, MaterialTheme.colors.primaryVariant),
             RoundedCornerShape(10.dp)
           )
-          .fillMaxWidth(0.9f)
+          .fillMaxWidth(0.7f)
           .fillMaxHeight()
       ) {
         LazyColumn(
@@ -228,34 +231,34 @@ class IronMan : View {
           verticalArrangement = Arrangement.spacedBy(BASE_PADDING)
         ) {
           items(listState) {
-            smashCharacterListItem(it)
+            Row (
+              modifier = Modifier.wrapContentSize()
+                .border(
+                  BorderStroke(3.dp, Color.White),
+                  RoundedCornerShape(10.dp)
+                )
+                .align(Alignment.Center)
+            ) {
+              characterLogo(
+                imageBitmap = it.imageBitmap,
+                modifier = Modifier
+                  .align(Alignment.CenterVertically)
+                  .weight(0.2f)
+                  .fillMaxSize()
+              )
+              Text(
+                text = it.name,
+                modifier = Modifier.fillMaxSize()
+                  .weight(1f)
+                  .padding(start = BASE_PADDING * 3)
+                  .align(Alignment.CenterVertically),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp
+              )
+            }
           }
         }
       }
-    }
-  }
-
-  @Composable
-  private fun smashCharacterListItem(character: SmashCharacter) {
-    Row (
-      modifier = Modifier.fillMaxSize()
-    ) {
-      characterLogo(
-        imageBitmap = character.imageBitmap,
-        modifier = Modifier
-          .align(Alignment.CenterVertically)
-          .weight(0.12f)
-          .fillMaxSize()
-      )
-      Text(
-        text = character.name,
-        modifier = Modifier.fillMaxSize()
-          .weight(1f)
-          .padding(start = BASE_PADDING * 3)
-          .align(Alignment.CenterVertically),
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp
-      )
     }
   }
 
