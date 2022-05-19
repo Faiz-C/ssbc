@@ -1,13 +1,12 @@
 package org.verse.ssbc.ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -19,6 +18,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.verse.ssbc.dao.CharacterDao
 import org.verse.ssbc.dao.IronManDao
 import org.verse.ssbc.model.SmashCharacter
@@ -45,9 +46,7 @@ class IronMan : View {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
       ) {
-        val characterState = remember { mutableStateOf(ironManService.currentCharacter) }
-        characterDisplay(this, characterState)
-        statusDisplay(this, characterState)
+        characterDisplay(this)
       }
       Row(
         modifier = Modifier.fillMaxWidth()
@@ -62,11 +61,16 @@ class IronMan : View {
   }
 
   @Composable
-  private fun characterDisplay(scope: RowScope, characterState: MutableState<SmashCharacter>) {
+  private fun characterDisplay(scope: RowScope) {
+    val characterState = remember { mutableStateOf(ironManService.currentCharacter) }
+    val coroutineScope = rememberCoroutineScope()
+    val listState = remember { mutableStateListOf<SmashCharacter>() }
+    val lazyListState = rememberLazyListState()
+
     scope.apply {
       Card(
         modifier = Modifier.fillMaxSize()
-          .weight(0.65f)
+          .weight(0.6f)
           .padding(end = BASE_PADDING)
       ) {
         Column(
@@ -90,6 +94,131 @@ class IronMan : View {
             fontWeight = FontWeight.SemiBold,
             fontSize = 20.sp
           )
+        }
+      }
+
+      Card(
+        modifier = Modifier.fillMaxSize()
+          .padding(start = BASE_PADDING)
+          .weight(1f)
+      ) {
+        Column(
+          modifier = Modifier.wrapContentSize()
+            .fillMaxSize()
+        ) {
+
+          title(
+            text = "Characters Played",
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+              .padding(bottom = BASE_PADDING * 2)
+          )
+
+          Box(
+            modifier = Modifier.wrapContentSize()
+              .padding(top = BASE_PADDING * 2)
+              .weight(1f)
+              .align(Alignment.CenterHorizontally)
+              .clip(RoundedCornerShape(10.dp))
+              .border(
+                BorderStroke(3.dp, MaterialTheme.colors.primaryVariant),
+                RoundedCornerShape(10.dp)
+              )
+              .background(Color(0xFF181726))
+              .fillMaxWidth(0.9f)
+              .fillMaxHeight()
+          ) {
+            LazyColumn(
+              state = lazyListState,
+              modifier = Modifier.wrapContentSize()
+                .padding(start = BASE_PADDING, end = BASE_PADDING),
+              verticalArrangement = Arrangement.spacedBy(BASE_PADDING),
+            ) {
+              itemsIndexed(listState) {i, character ->
+                Row (
+                  modifier = Modifier.wrapContentSize()
+                    .align(Alignment.Center)
+                ) {
+                  Text(
+                    text = "${i + 1}.",
+                    modifier = Modifier.fillMaxSize()
+                      .weight(0.10f)
+                      .padding(start = BASE_PADDING * 2)
+                      .align(Alignment.CenterVertically),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                  )
+
+                  characterLogo(
+                    imageBitmap = character.imageBitmap,
+                    modifier = Modifier
+                      .align(Alignment.CenterVertically)
+                      .weight(0.15f)
+                      .fillMaxSize()
+                  )
+                  Text(
+                    text = character.name,
+                    modifier = Modifier.fillMaxSize()
+                      .weight(1f)
+                      .padding(start = BASE_PADDING * 3)
+                      .align(Alignment.CenterVertically),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                  )
+                }
+              }
+            }
+
+            VerticalScrollbar(
+              modifier = Modifier.align(Alignment.CenterEnd)
+                .fillMaxHeight(),
+              adapter = rememberScrollbarAdapter(lazyListState)
+            )
+          }
+
+          Row(
+            modifier = Modifier.fillMaxSize()
+              .weight(0.4f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+          ) {
+            val textState = remember { mutableStateOf("Start") }
+
+            Button(
+              modifier = Modifier.align(Alignment.CenterVertically),
+              onClick = {
+                coroutineScope.launch {
+                  if (!ironManService.inProgress) {
+                    ironManService.startRun()
+                    textState.value = "Next"
+                  } else {
+                    ironManService.markCurrentPlayed()
+                    listState.add(ironManService.currentCharacter)
+                    lazyListState.animateScrollToItem(listState.size - 1)
+                  }
+
+                  for (i in 0 .. 15) {
+                    characterState.value = ironManService.next()
+                    delay(((i + 1) * 15).toLong())
+                  }
+
+                }
+              }
+            ) {
+              Text(text = textState.value)
+            }
+
+            Button(
+              modifier = Modifier.align(Alignment.CenterVertically)
+                .padding(start = BASE_PADDING),
+              onClick = {
+                listState.clear()
+                ironManService.resetRun()
+                textState.value = "Start"
+              }
+            ) {
+              Text("Reset")
+            }
+          }
         }
       }
     }
@@ -140,123 +269,6 @@ class IronMan : View {
             text = "Section 3.2",
             modifier = Modifier.align(Alignment.CenterHorizontally)
           )
-        }
-      }
-    }
-  }
-
-  @Composable
-  private fun statusDisplay(scope: RowScope, characterState: MutableState<SmashCharacter>) {
-    scope.apply {
-      Card(
-        modifier = Modifier.fillMaxSize()
-          .weight(1f)
-          .padding(start = BASE_PADDING)
-      ) {
-        Column(
-          modifier = Modifier.wrapContentSize()
-            .fillMaxSize()
-        ) {
-
-          title(
-            text = "Played",
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-              .padding(bottom = BASE_PADDING * 2)
-          )
-
-          val listState = remember { mutableStateListOf<SmashCharacter>() }
-
-          charactersPlayedStatus(this, listState)
-
-          Row(
-            modifier = Modifier.fillMaxSize()
-              .weight(0.7f),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-          ) {
-            val textState = remember { mutableStateOf("Start") }
-
-            Button(
-              modifier = Modifier.align(Alignment.CenterVertically),
-              onClick = {
-                if (!ironManService.inProgress) {
-                  ironManService.startRun()
-                  textState.value = "Next"
-                } else {
-                  val next: SmashCharacter = ironManService.next()
-                  characterState.value = next
-                  listState.add(next)
-                }
-              }
-            ) {
-              Text(text = textState.value)
-            }
-
-            Button(
-              modifier = Modifier.align(Alignment.CenterVertically)
-                .padding(start = BASE_PADDING),
-              onClick = {
-                listState.clear()
-                ironManService.resetRun()
-                textState.value = "Start"
-              }
-            ) {
-              Text("Reset")
-            }
-          }
-        }
-      }
-    }
-  }
-
-  @Composable
-  private fun charactersPlayedStatus(scope: ColumnScope, listState: MutableList<SmashCharacter>) {
-    scope.apply {
-      Box(
-        modifier = Modifier.wrapContentSize()
-          .weight(1f)
-          .align(Alignment.CenterHorizontally)
-          .background(Color.Blue)
-          .clip(RoundedCornerShape(10.dp))
-          .border(
-            BorderStroke(3.dp, MaterialTheme.colors.primaryVariant),
-            RoundedCornerShape(10.dp)
-          )
-          .fillMaxWidth(0.7f)
-          .fillMaxHeight()
-      ) {
-        LazyColumn(
-          modifier = Modifier.wrapContentSize()
-            .padding(start = BASE_PADDING, end = BASE_PADDING),
-          verticalArrangement = Arrangement.spacedBy(BASE_PADDING)
-        ) {
-          items(listState) {
-            Row (
-              modifier = Modifier.wrapContentSize()
-                .border(
-                  BorderStroke(3.dp, Color.White),
-                  RoundedCornerShape(10.dp)
-                )
-                .align(Alignment.Center)
-            ) {
-              characterLogo(
-                imageBitmap = it.imageBitmap,
-                modifier = Modifier
-                  .align(Alignment.CenterVertically)
-                  .weight(0.2f)
-                  .fillMaxSize()
-              )
-              Text(
-                text = it.name,
-                modifier = Modifier.fillMaxSize()
-                  .weight(1f)
-                  .padding(start = BASE_PADDING * 3)
-                  .align(Alignment.CenterVertically),
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp
-              )
-            }
-          }
         }
       }
     }
