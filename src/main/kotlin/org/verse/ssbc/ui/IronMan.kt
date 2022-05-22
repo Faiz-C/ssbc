@@ -3,22 +3,27 @@ package org.verse.ssbc.ui
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.verse.ssbc.dao.CharacterDao
 import org.verse.ssbc.dao.IronManDao
@@ -33,9 +38,32 @@ class IronMan : View {
 
   private val ironManService: IronManService = IronManService(CharacterDao(), IronManDao())
 
+  private lateinit var startOrNextText: MutableState<String>
+  private lateinit var time: MutableState<String>
+
+  private lateinit var timeSplits: SnapshotStateList<String>
+  private lateinit var timeSplitsLazyState: LazyListState
+
+  private lateinit var currentCharacter: MutableState<SmashCharacter>
+  private lateinit var playedCharacters: SnapshotStateList<SmashCharacter>
+  private lateinit var playedCharactersLazyState: LazyListState
+
+  private lateinit var coroutineScope: CoroutineScope
+
+
+
   @Composable
   @Preview
   override fun render() {
+    this.startOrNextText = remember { mutableStateOf("Start") }
+    this.time = remember { mutableStateOf("00:00:00.000") }
+    this.timeSplits = remember { mutableStateListOf() }
+    this.timeSplitsLazyState = rememberLazyListState()
+    this.currentCharacter = remember { mutableStateOf(ironManService.currentCharacter) }
+    this.playedCharacters = remember { mutableStateListOf() }
+    this.playedCharactersLazyState = rememberLazyListState()
+    this.coroutineScope = rememberCoroutineScope()
+
     Column(
       modifier = Modifier.wrapContentSize()
         .padding(BASE_PADDING * 3),
@@ -62,11 +90,6 @@ class IronMan : View {
 
   @Composable
   private fun characterDisplay(scope: RowScope) {
-    val characterState = remember { mutableStateOf(ironManService.currentCharacter) }
-    val coroutineScope = rememberCoroutineScope()
-    val listState = remember { mutableStateListOf<SmashCharacter>() }
-    val lazyListState = rememberLazyListState()
-
     scope.apply {
       Card(
         modifier = Modifier.fillMaxSize()
@@ -83,13 +106,13 @@ class IronMan : View {
           )
 
           characterLogo(
-            imageBitmap = characterState.value.imageBitmap,
+            imageBitmap = currentCharacter.value.imageBitmap,
             modifier = Modifier.align(Alignment.CenterHorizontally)
               .fillMaxSize(0.75f)
           )
 
           Text(
-            text = characterState.value.name,
+            text = currentCharacter.value.name,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             fontWeight = FontWeight.SemiBold,
             fontSize = 20.sp
@@ -128,15 +151,27 @@ class IronMan : View {
               .fillMaxHeight()
           ) {
             LazyColumn(
-              state = lazyListState,
+              state = playedCharactersLazyState,
               modifier = Modifier.wrapContentSize()
                 .padding(start = BASE_PADDING, end = BASE_PADDING),
               verticalArrangement = Arrangement.spacedBy(BASE_PADDING),
             ) {
-              itemsIndexed(listState) {i, character ->
+              itemsIndexed(playedCharacters) {i, character ->
                 Row (
                   modifier = Modifier.wrapContentSize()
                     .align(Alignment.Center)
+                    .drawBehind {
+                      val strokeWidth = (1.dp * density).value
+                      val y = size.height - strokeWidth / 2
+
+                      drawLine(
+                        brush = SolidColor(Color.White),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Square,
+                        start = Offset.Zero.copy(y = y),
+                        end = Offset(x = size.width, y = y)
+                      )
+                    }
                 ) {
                   Text(
                     text = "${i + 1}.",
@@ -171,7 +206,7 @@ class IronMan : View {
             VerticalScrollbar(
               modifier = Modifier.align(Alignment.CenterEnd)
                 .fillMaxHeight(),
-              adapter = rememberScrollbarAdapter(lazyListState)
+              adapter = rememberScrollbarAdapter(playedCharactersLazyState)
             )
           }
 
@@ -181,7 +216,6 @@ class IronMan : View {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
           ) {
-            val textState = remember { mutableStateOf("Start") }
 
             Button(
               modifier = Modifier.align(Alignment.CenterVertically),
@@ -189,31 +223,37 @@ class IronMan : View {
                 coroutineScope.launch {
                   if (!ironManService.inProgress) {
                     ironManService.startRun()
-                    textState.value = "Next"
+                    startOrNextText.value = "Next"
                   } else {
-                    ironManService.markCurrentPlayed()
-                    listState.add(ironManService.currentCharacter)
-                    lazyListState.animateScrollToItem(listState.size - 1)
+                    // will return a split if we have made it there
+                    ironManService.markCurrentPlayed()?.let {
+                      timeSplits.add(it)
+                      timeSplitsLazyState.animateScrollToItem(timeSplits.size - 1)
+                    }
+                    playedCharacters.add(ironManService.currentCharacter)
+                    playedCharactersLazyState.animateScrollToItem(playedCharacters.size - 1)
                   }
 
+                  if (ironManService.complete()) return@launch
+
                   for (i in 0 .. 15) {
-                    characterState.value = ironManService.next()
+                    currentCharacter.value = ironManService.next()
                     delay(((i + 1) * 15).toLong())
                   }
 
                 }
               }
             ) {
-              Text(text = textState.value)
+              Text(text = startOrNextText.value)
             }
 
             Button(
               modifier = Modifier.align(Alignment.CenterVertically)
                 .padding(start = BASE_PADDING),
               onClick = {
-                listState.clear()
+                playedCharacters.clear()
                 ironManService.resetRun()
-                textState.value = "Start"
+                startOrNextText.value = "Start"
               }
             ) {
               Text("Reset")
@@ -226,6 +266,15 @@ class IronMan : View {
 
   @Composable
   private fun timerDisplay(scope: RowScope) {
+    // Needs to be a more efficient way to do this
+    // this runs cpu like mad (as expected)
+    coroutineScope.launch {
+      while (isActive) {
+        time.value = ironManService.currentTime()
+        delay(10L)
+      }
+    }
+
     scope.apply {
       Card(
         modifier = Modifier.fillMaxSize()
@@ -236,13 +285,68 @@ class IronMan : View {
           modifier = Modifier.wrapContentSize()
             .fillMaxSize()
         ) {
-          Text(
-            text = "Section 2.1",
+
+          title(
+            text = "Time Splits",
             modifier = Modifier.align(Alignment.CenterHorizontally)
+              .weight(0.2f)
           )
+
+          Box(
+            modifier = Modifier.wrapContentSize()
+              .padding(top = BASE_PADDING, bottom = BASE_PADDING)
+              .weight(1f)
+              .align(Alignment.CenterHorizontally)
+              .clip(RoundedCornerShape(10.dp))
+              .border(
+                BorderStroke(3.dp, MaterialTheme.colors.primaryVariant),
+                RoundedCornerShape(10.dp)
+              )
+              .background(Color(0xFF181726))
+              .fillMaxWidth(0.9f)
+              .fillMaxHeight()
+          ) {
+            LazyColumn(
+              state = timeSplitsLazyState,
+              modifier = Modifier.wrapContentSize(),
+              verticalArrangement = Arrangement.spacedBy(BASE_PADDING),
+            ) {
+              items(timeSplits) {
+                Row(
+                  modifier = Modifier.wrapContentSize()
+                    .align(Alignment.Center)
+                    .drawBehind {
+                      val strokeWidth = (1.dp * density).value
+                      val y = size.height - strokeWidth / 2
+
+                      drawLine(
+                        brush = SolidColor(Color.White),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Square,
+                        start = Offset.Zero.copy(y = y),
+                        end = Offset(x = size.width, y = y)
+                      )
+                    }
+                ) {
+                  Text(
+                    text = it,
+                    modifier = Modifier.fillMaxSize()
+                      .padding(start = BASE_PADDING * 2)
+                      .align(Alignment.CenterVertically),
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 18.sp
+                  )
+                }
+              }
+            }
+          }
+
           Text(
-            text = "Section 2.2",
+            text = time.value,
             modifier = Modifier.align(Alignment.CenterHorizontally)
+              .weight(0.2f),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 24.sp
           )
         }
       }
@@ -288,7 +392,7 @@ class IronMan : View {
     Text(
       text = text,
       modifier = modifier,
-      fontWeight = FontWeight.Medium,
+      fontWeight = FontWeight.SemiBold,
       fontStyle = FontStyle.Italic,
       fontSize = 24.sp
     )

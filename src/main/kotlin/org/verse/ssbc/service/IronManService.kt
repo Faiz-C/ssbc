@@ -4,23 +4,26 @@ import org.verse.ssbc.dao.CharacterDao
 import org.verse.ssbc.dao.IronManDao
 import org.verse.ssbc.model.IronMan
 import org.verse.ssbc.model.SmashCharacter
+import org.verse.ssbc.utils.Timer
 import java.time.LocalDateTime
 
 class IronManService(
-  private val characterDao: CharacterDao,
+  characterDao: CharacterDao,
   private val ironManDao: IronManDao
 ) {
 
   private val characters: Set<SmashCharacter> = characterDao.getAll().toSet()
+  private val current: IronMan = IronMan()
+  private val timer: Timer = Timer()
 
   var inProgress: Boolean = false
   var currentCharacter: SmashCharacter = this.characters.first()
-  private val current: IronMan = IronMan()
 
   fun startRun(): IronMan {
     this.current.startTime = LocalDateTime.now()
     this.current.charactersPlayed.clear()
     this.inProgress = true
+    this.timer.start()
     return current
   }
 
@@ -30,10 +33,8 @@ class IronManService(
     this.startRun()
   }
 
-  private fun stopRun() {
-    this.current.endTime = LocalDateTime.now()
-    this.inProgress = false
-    this.ironManDao.insert(this.current)
+  fun currentTime(): String {
+    return this.timer.time()
   }
 
   fun next(): SmashCharacter {
@@ -41,20 +42,33 @@ class IronManService(
     return this.currentCharacter
   }
 
-  fun markCurrentPlayed() {
+  fun markCurrentPlayed(): String? {
     this.current.charactersPlayed.add(this.currentCharacter)
+    val totalCharactersPlayer = this.current.charactersPlayed.size
+    return if (totalCharactersPlayer % 10 == 0 || this.complete()) {
+      "Characters ${(totalCharactersPlayer - 9)} - ${totalCharactersPlayer}: ${this.timer.time()}"
+    } else {
+      null
+    }
+  }
+
+  fun remainingCharacters(): Int {
+    return this.characters.size - this.current.charactersPlayed.size
   }
 
   fun complete(): Boolean {
-    return this.characters.size == this.current.charactersPlayed.size
+    return this.remainingCharacters() == 0
   }
 
   fun getPastRuns(): List<IronMan> {
     return ironManDao.getAll()
   }
 
-  fun playedCharacters(): List<SmashCharacter> {
-    return this.current.charactersPlayed.toList()
+  private fun stopRun() {
+    this.current.endTime = LocalDateTime.now()
+    this.inProgress = false
+    this.timer.stop()
+    this.ironManDao.insert(this.current)
   }
 
 }
