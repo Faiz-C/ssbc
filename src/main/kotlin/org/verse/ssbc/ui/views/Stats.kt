@@ -1,4 +1,4 @@
-package org.verse.ssbc.ui
+package org.verse.ssbc.ui.views
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
@@ -15,6 +15,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
 class Stats : View {
+
+  override val name: String = "Stats"
 
   @Composable
   @Preview
@@ -35,7 +37,5 @@ class Stats : View {
       )
     }
   }
-
-  override fun name() = "Stats"
 
 }

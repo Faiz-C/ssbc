@@ -1,4 +1,4 @@
-package org.verse.ssbc.ui
+package org.verse.ssbc.ui.views
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
@@ -8,5 +8,5 @@ interface View {
   @Preview
   fun render()
 
-  fun name(): String
+  val name: String
 }

@@ -6,9 +6,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import org.verse.ssbc.utils.bootstrapDb
-import org.verse.ssbc.ui.IronMan
-import org.verse.ssbc.ui.Stats
-import org.verse.ssbc.ui.ViewContainer
+import org.verse.ssbc.ui.views.IronMan
+import org.verse.ssbc.ui.views.Stats
+import org.verse.ssbc.ui.views.ViewContainer
 
 fun main() {
   bootstrapDb()

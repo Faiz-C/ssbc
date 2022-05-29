@@ -1,14 +1,11 @@
-package org.verse.ssbc.ui
+package org.verse.ssbc.ui.views
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.*
@@ -33,7 +30,7 @@ class ViewContainer(private val views: List<View>) : View {
     }
   }
 
-  override fun name() = "Container"
+  override val name: String = "Container"
 
   @Composable
   private fun tabBar(pagerState: PagerState) {
@@ -54,7 +51,7 @@ class ViewContainer(private val views: List<View>) : View {
         Tab(
           text = {
             Text(
-              text = view.name(),
+              text = view.name,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colors.onPrimary
             )
