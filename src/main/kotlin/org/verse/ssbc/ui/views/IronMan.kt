@@ -7,6 +7,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import org.verse.ssbc.config.Config
 import org.verse.ssbc.dao.CharacterDao
 import org.verse.ssbc.dao.IronManDao
 import org.verse.ssbc.modules.IronManTracker
@@ -15,20 +16,25 @@ import org.verse.ssbc.modules.TimeSplitCollection
 import org.verse.ssbc.ui.common.BASE_PADDING
 import org.verse.ssbc.ui.components.CharacterDisplay
 import org.verse.ssbc.ui.components.CharacterTracker
+import org.verse.ssbc.ui.components.Settings
 import org.verse.ssbc.ui.components.TimeSplits
 
 class IronMan : View {
+
+  private val config: Config = Config.load()
 
   override val name: String = "Iron Man"
 
   @Composable
   @Preview
   override fun render() {
-    val ironManTracker: IronManTracker = remember { IronManTracker(CharacterDao(), IronManDao()) }
+    val ironManTracker: IronManTracker = remember { IronManTracker(CharacterDao(), IronManDao(), config) }
     val timeSplitCollection: TimeSplitCollection = remember { TimeSplitCollection(timeSplitCondition = {
       ironManTracker.complete() || ironManTracker.played.size % 10 == 0
     }) }
-    val stopWatch: StopWatch = remember { StopWatch(includeMillis = true) }
+    val stopWatch: StopWatch = remember { StopWatch(
+      config = config
+    ) }
     val timeSplitsLazyState = rememberLazyListState()
     val playedCharactersLazyState = rememberLazyListState()
 
@@ -98,10 +104,16 @@ class IronMan : View {
 
         Card(
           modifier = Modifier.fillMaxSize()
-            .weight(0.4f)
+            .weight(0.5f)
             .padding(top = BASE_PADDING * 2, start = BASE_PADDING * 2)
         ) {
-
+          Settings(
+            config = config,
+            stopWatch = stopWatch,
+            ironManTracker = ironManTracker,
+            modifier = Modifier.wrapContentSize()
+              .fillMaxSize()
+          )
         }
       }
     }

@@ -3,6 +3,7 @@ package org.verse.ssbc.modules
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import kotlinx.coroutines.delay
+import org.verse.ssbc.config.Config
 import org.verse.ssbc.dao.CharacterDao
 import org.verse.ssbc.dao.IronManDao
 import org.verse.ssbc.model.IronMan
@@ -10,11 +11,12 @@ import org.verse.ssbc.model.SmashCharacter
 import java.time.LocalDateTime
 
 class IronManTracker(
-  characterDao: CharacterDao,
-  private val ironManDao: IronManDao
+  private val characterDao: CharacterDao,
+  private val ironManDao: IronManDao,
+  private val config: Config
 ) {
 
-  private val characters: Set<SmashCharacter> = characterDao.getAll().toSet()
+  private var characters: Set<SmashCharacter> = this.loadCharacters()
   private val current: IronMan = IronMan()
 
   var inProgress: Boolean = false
@@ -37,6 +39,7 @@ class IronManTracker(
       this.ironManDao.insert(this.current)
     }
 
+    this.characters = this.loadCharacters()
     this.currentCharacter = this.characters.random()
     this.played.clear()
     this.current.charactersPlayed.clear()
@@ -63,6 +66,24 @@ class IronManTracker(
 
   fun complete(): Boolean {
     return this.played.size == this.characters.size
+  }
+
+  private fun loadCharacters(): Set<SmashCharacter> {
+    var characters = this.characterDao.getAll()
+
+    if (!config.includeDcl1) {
+      characters = characters.filter {
+        it.fightersPass != 1
+      }
+    }
+
+    if (!config.includeDcl2) {
+      characters = characters.filter {
+        it.fightersPass != 2
+      }
+    }
+
+    return characters.toMutableSet()
   }
 
 }

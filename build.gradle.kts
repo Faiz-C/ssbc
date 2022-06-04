@@ -33,6 +33,11 @@ dependencies {
     implementation("ca.gosyer:accompanist-pager:0.24.4")
     implementation("ca.gosyer:accompanist-pager-indicators:0.24.4")
 
+    // Jackson
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8")
+
     // SLF4J + Logging
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.2")
