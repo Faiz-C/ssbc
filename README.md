@@ -10,7 +10,7 @@ The main point of this application was to try out the Jetpack Compose UI library
 Jetbrains Exposed Database library.
 
 ## Use
-This application is free to use by any who wants to use it. A link to this repo would
+This application is free to use by anyone who wants to use it. A link to this repo would
 be greatly appreciated if you do decide to use it publicly though.
 
 ## Issues
