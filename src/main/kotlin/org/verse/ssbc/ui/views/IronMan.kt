@@ -2,14 +2,13 @@ package org.verse.ssbc.ui.views
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Card
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.verse.ssbc.config.Config
-import org.verse.ssbc.dao.CharacterDao
-import org.verse.ssbc.dao.IronManDao
 import org.verse.ssbc.modules.IronManTracker
 import org.verse.ssbc.modules.StopWatch
 import org.verse.ssbc.modules.TimeSplitCollection
@@ -19,18 +18,18 @@ import org.verse.ssbc.ui.components.CharacterTracker
 import org.verse.ssbc.ui.components.Settings
 import org.verse.ssbc.ui.components.TimeSplits
 
-class IronMan : View {
+class IronMan(
+  private val ironManTracker: IronManTracker,
+  private val config: Config
+) : View {
 
-  private val config: Config = Config.load()
-
-  override val name: String = "Iron Man"
+  override val name: String = "Ironman"
 
   @Composable
   @Preview
   override fun render() {
-    val ironManTracker: IronManTracker = remember { IronManTracker(CharacterDao(), IronManDao(), config) }
     val timeSplitCollection: TimeSplitCollection = remember { TimeSplitCollection(timeSplitCondition = {
-      ironManTracker.complete() || ironManTracker.played.size % 10 == 0
+      ironManTracker.complete || ironManTracker.played.size % 10 == 0
     }) }
     val stopWatch: StopWatch = remember { StopWatch(
       config = config
@@ -40,7 +39,7 @@ class IronMan : View {
 
     Column(
       modifier = Modifier.wrapContentSize()
-        .padding(BASE_PADDING * 3),
+        .padding(all = BASE_PADDING * 2),
     ) {
       Row(
         modifier = Modifier.fillMaxWidth()
@@ -56,7 +55,6 @@ class IronMan : View {
           CharacterDisplay(
             character = ironManTracker.currentCharacter,
             modifier = Modifier.fillMaxSize()
-              .wrapContentSize()
           )
         }
 
@@ -65,26 +63,20 @@ class IronMan : View {
             .padding(start = BASE_PADDING)
             .weight(1f)
         ) {
-          Column(
-            modifier = Modifier.wrapContentSize()
-              .fillMaxSize()
-          ) {
-            CharacterTracker(
-              ironManTracker = ironManTracker,
-              playedCharactersLazyState = playedCharactersLazyState,
-              timeSplitCollection = timeSplitCollection,
-              timeSplitsLazyState = timeSplitsLazyState,
-              stopWatch = stopWatch,
-              modifier = Modifier.wrapContentSize()
-                .fillMaxSize()
-            )
-          }
+          CharacterTracker(
+            ironManTracker = ironManTracker,
+            playedCharactersLazyState = playedCharactersLazyState,
+            timeSplitCollection = timeSplitCollection,
+            timeSplitsLazyState = timeSplitsLazyState,
+            stopWatch = stopWatch,
+            modifier = Modifier.fillMaxSize()
+          )
         }
       }
 
       Row(
         modifier = Modifier.fillMaxWidth()
-          .weight(0.8f),
+          .weight(1f),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
       ) {
@@ -96,8 +88,7 @@ class IronMan : View {
           TimeSplits(
             timeSplitCollection = timeSplitCollection,
             stopWatch = stopWatch,
-            modifier = Modifier.wrapContentSize()
-              .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             lazyListState = timeSplitsLazyState
           )
         }
@@ -111,8 +102,7 @@ class IronMan : View {
             config = config,
             stopWatch = stopWatch,
             ironManTracker = ironManTracker,
-            modifier = Modifier.wrapContentSize()
-              .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
           )
         }
       }

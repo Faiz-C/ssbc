@@ -11,8 +11,8 @@ import java.io.File
 
 class Config(
   showMilliseconds: Boolean = true,
-  includeDcl1: Boolean = true,
-  includeDcl2: Boolean = true
+  includeDlc1: Boolean = true,
+  includeDlc2: Boolean = true
 ) {
 
   companion object {
@@ -53,9 +53,9 @@ class Config(
 
   var showMilliseconds: Boolean by mutableStateOf(showMilliseconds)
 
-  var includeDcl1: Boolean by mutableStateOf(includeDcl1)
+  var includeDlc1: Boolean by mutableStateOf(includeDlc1)
 
-  var includeDcl2: Boolean by mutableStateOf(includeDcl2)
+  var includeDlc2: Boolean by mutableStateOf(includeDlc2)
 
   fun save() {
     objectMapper.writeValue(File(configFileLocation), config)

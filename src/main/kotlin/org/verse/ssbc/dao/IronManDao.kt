@@ -16,17 +16,20 @@ class IronManDao {
     private val characterTable = Tables.Character
   }
 
-  fun insert(ironMan: IronMan) {
-    transaction {
+  fun insert(ironMan: IronMan): Int {
+    return transaction {
       val id: Int = ironManTable.insert {
         it[startTime] = ironMan.startTime
         it[endTime] = ironMan.endTime
+        it[complete] = ironMan.complete
       } get ironManTable.id
 
       ironManCharacterTable.batchInsert(ironMan.charactersPlayed) {
         this[ironManCharacterTable.ironManId] = id
         this[ironManCharacterTable.characterName] = it.name
       }
+
+      id
     }
   }
 
@@ -44,7 +47,8 @@ class IronManDao {
               IronMan(
                 id = it,
                 startTime = result[ironManTable.startTime],
-                endTime = result[ironManTable.endTime]
+                endTime = result[ironManTable.endTime],
+                complete = result[ironManTable.complete]
               )
             }
 

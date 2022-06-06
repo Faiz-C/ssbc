@@ -79,7 +79,7 @@ INSERT OR IGNORE INTO main.CHARACTER(NAME, IMAGE_NAME, FIGHTERS_PASS) VALUES
 ('Villager', 'villager', 0),
 ('Wario', 'wario', 0),
 ('Wii Fit', 'wii-fit', 0),
-('wolf', 'wolf', 0),
+('Wolf', 'wolf', 0),
 ('Yoshi', 'yoshi', 0),
 ('Young Link', 'young-link', 0),
 ('Zelda', 'zelda', 0),

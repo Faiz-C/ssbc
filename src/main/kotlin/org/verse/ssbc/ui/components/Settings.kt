@@ -1,7 +1,9 @@
 package org.verse.ssbc.ui.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,18 +22,18 @@ fun Settings(
   modifier: Modifier
 ) {
   Column(
-    modifier = modifier
+    modifier = modifier,
+    verticalArrangement = Arrangement.spacedBy(BASE_PADDING)
   ) {
     Header(
       text = "Settings",
       modifier = Modifier.align(Alignment.CenterHorizontally)
-        .padding(bottom = BASE_PADDING * 4)
+        .padding(bottom = BASE_PADDING * 2)
     )
 
     SwitchWithText(
       modifier = Modifier.fillMaxSize()
         .weight(1f)
-        .align(Alignment.CenterHorizontally)
         .padding(start = BASE_PADDING * 4),
       text = "Show Milliseconds",
       checked = config.showMilliseconds,
@@ -45,12 +47,11 @@ fun Settings(
     SwitchWithText(
       modifier = Modifier.fillMaxSize()
         .weight(1f)
-        .align(Alignment.CenterHorizontally)
         .padding(start = BASE_PADDING * 4),
-    text = "Include DCL 1 Characters",
-      checked = config.includeDcl1,
+      text = "Include DLC 1 Characters",
+      checked = config.includeDlc1,
       onCheckedChange = {
-        config.includeDcl1 = it
+        config.includeDlc1 = it
         if (!ironManTracker.inProgress) ironManTracker.reset()
         config.save()
       }
@@ -59,17 +60,15 @@ fun Settings(
     SwitchWithText(
       modifier = Modifier.fillMaxSize()
         .weight(1f)
-        .align(Alignment.CenterHorizontally)
         .padding(start = BASE_PADDING * 4),
-    text = "Include DCL 2 Characters",
-      checked = config.includeDcl2,
+      text = "Include DLC 2 Characters",
+      checked = config.includeDlc2,
       onCheckedChange = {
-        config.includeDcl2 = it
+        config.includeDlc2 = it
         if (!ironManTracker.inProgress) ironManTracker.reset()
         config.save()
       }
     )
-
   }
 }
 
@@ -81,22 +80,21 @@ private fun SwitchWithText(
   onCheckedChange: (Boolean) -> Unit
 ) {
   Row(
-    modifier = modifier,
-    horizontalArrangement = Arrangement.End
+    modifier = modifier
   ) {
     Text(
       text = text,
-      modifier = Modifier.wrapContentSize()
-        .fillMaxSize()
-        .weight(1f),
-      fontSize = 14.sp
+      modifier = Modifier.weight(1f),
+      fontSize = 16.sp
     )
 
     Switch(
-      modifier = Modifier
-        .weight(1f),
+      modifier = Modifier.weight(1f),
       checked = checked,
-      onCheckedChange = onCheckedChange
+      onCheckedChange = onCheckedChange,
+      colors = SwitchDefaults.colors(
+        checkedThumbColor = MaterialTheme.colors.primaryVariant
+      )
     )
   }
 }

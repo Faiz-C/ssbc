@@ -17,6 +17,7 @@ sealed class Tables private constructor() {
     val id = integer("ID").autoIncrement()
     val startTime = datetime("START_TIME")
     val endTime = datetime("END_TIME")
+    val complete = bool("COMPLETE")
 
     override val primaryKey = PrimaryKey(id, name = "IRONMAN_RUN_PK")
   }

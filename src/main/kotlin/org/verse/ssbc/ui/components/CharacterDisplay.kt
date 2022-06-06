@@ -26,7 +26,7 @@ fun CharacterDisplay(
     CharacterLogo(
       character = character,
       modifier = Modifier.align(Alignment.CenterHorizontally)
-        .fillMaxSize(0.75f)
+        .fillMaxSize(0.8f)
     )
 
     Text(

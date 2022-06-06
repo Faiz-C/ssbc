@@ -1,6 +1,9 @@
 package org.verse.ssbc.modules
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import kotlinx.coroutines.delay
 import org.verse.ssbc.config.Config
@@ -23,6 +26,11 @@ class IronManTracker(
   val played: SnapshotStateList<SmashCharacter> = mutableStateListOf()
   var currentCharacter: SmashCharacter by mutableStateOf(this.characters.first())
   var spinning: Boolean by mutableStateOf(false)
+  var previousRuns: SnapshotStateList<IronMan> = mutableStateListOf<IronMan>().also {
+    it.addAll(this.ironManDao.getAll())
+  }
+
+  var complete: Boolean by mutableStateOf(false)
 
   suspend fun start() {
     if (this.inProgress) return
@@ -33,20 +41,14 @@ class IronManTracker(
   }
 
   fun reset() {
-    if (this.inProgress) {
-      this.inProgress = false
-      this.current.endTime = LocalDateTime.now()
-      this.ironManDao.insert(this.current)
-    }
-
+    this.end()
     this.characters = this.loadCharacters()
     this.currentCharacter = this.characters.random()
     this.played.clear()
-    this.current.charactersPlayed.clear()
   }
 
   suspend fun next() {
-    if (this.complete()) return
+    if (this.complete) return
 
     val choices = this.characters.minus(this.played)
 
@@ -62,22 +64,35 @@ class IronManTracker(
 
   fun recordCurrent() {
     this.played.add(this.currentCharacter)
+    this.complete = this.played.size == this.characters.size
   }
 
-  fun complete(): Boolean {
-    return this.played.size == this.characters.size
+  private fun end() {
+    if (!this.inProgress) return
+
+    this.inProgress = false
+    this.current.endTime = LocalDateTime.now()
+    this.current.charactersPlayed = this.played.toMutableSet()
+    this.current.complete = this.complete
+
+    val id = this.ironManDao.insert(this.current)
+    this.previousRuns.add(this.current.copy(
+      id = id
+    ))
+
+    this.complete = false
   }
 
   private fun loadCharacters(): Set<SmashCharacter> {
     var characters = this.characterDao.getAll()
 
-    if (!config.includeDcl1) {
+    if (!config.includeDlc1) {
       characters = characters.filter {
         it.fightersPass != 1
       }
     }
 
-    if (!config.includeDcl2) {
+    if (!config.includeDlc2) {
       characters = characters.filter {
         it.fightersPass != 2
       }

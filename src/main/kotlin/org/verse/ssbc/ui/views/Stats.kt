@@ -1,20 +1,20 @@
 package org.verse.ssbc.ui.views
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.Text
+import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
+import org.verse.ssbc.modules.IronManTracker
+import org.verse.ssbc.ui.common.BASE_PADDING
+import org.verse.ssbc.ui.components.PreviousRunsDisplay
 
-class Stats : View {
+class Stats(
+  private val ironManTracker: IronManTracker
+) : View {
 
   override val name: String = "Stats"
 
@@ -22,20 +22,17 @@ class Stats : View {
   @Preview
   override fun render() {
     Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .background(Color.Black)
-        .wrapContentSize(Alignment.Center)
+      modifier = Modifier.wrapContentSize()
+        .padding(all = BASE_PADDING * 2),
     ) {
-      Text(
-        text = "Stats View",
-        fontWeight = FontWeight.Bold,
-        color = Color.White,
-        modifier = Modifier.align(Alignment.CenterHorizontally),
-        textAlign = TextAlign.Center,
-        fontSize = 25.sp
-      )
+      Card(
+        modifier = Modifier.fillMaxSize()
+      ) {
+        PreviousRunsDisplay(
+          modifier = Modifier.fillMaxSize(),
+          ironManTracker = ironManTracker
+        )
+      }
     }
   }
-
 }

@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +18,7 @@ import org.verse.ssbc.modules.StopWatch
 import org.verse.ssbc.modules.TimeSplitCollection
 import org.verse.ssbc.ui.common.BASE_PADDING
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Controls(
   ironManTracker: IronManTracker,
@@ -33,6 +36,35 @@ fun Controls(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.Center
   ) {
+
+    if (ironManTracker.complete) {
+      stopWatch.stop()
+      AlertDialog(
+        onDismissRequest = {
+          ironManTracker.reset()
+          timeSplitCollection.clear()
+        },
+        title = {
+          Text(text = "Congratulations!")
+        },
+        text = {
+          Text(
+            text = "You completed an IronMan in ${stopWatch.time}",
+            modifier = Modifier.align(Alignment.CenterVertically)
+          )
+        },
+        confirmButton = {
+          Button(
+            onClick = {
+              ironManTracker.reset()
+              timeSplitCollection.clear()
+            }) {
+            Text("Close")
+          }
+        }
+      )
+    }
+
     Button(
       modifier = Modifier.align(Alignment.CenterVertically),
       onClick = {

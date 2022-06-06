@@ -50,11 +50,15 @@ class StopWatch(
     }
   }
 
-  fun reset() {
-
-    // Kill the last job
+  fun stop() {
+    // Kill the current job
     this.stopWatchJob?.cancel()
     this.stopWatchJob = null
+  }
+
+  fun reset() {
+
+    this.stop()
 
     // Reset the stopwatch state
     this.time = this.zeroState()
