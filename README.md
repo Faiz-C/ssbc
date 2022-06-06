@@ -11,7 +11,7 @@ Jetbrains Exposed Database library.
 
 ## Use
 This application is free to use by any who wants to use it. A link to this repo would
-be greatly appreciated if you do decide to use it though. 
+be greatly appreciated if you do decide to use it publicly though.
 
 ## Issues
 As this was mainly an application for learning on my end I'm sure there might be issues
