@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.6.10"
     id("org.jetbrains.compose") version "1.1.1"
+    id("edu.sc.seis.launch4j") version "2.5.3"
 }
 
 group = "org.verse"
@@ -60,4 +61,9 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+launch4j {
+    outfile = "SSBC.exe"
+    mainClassName = "org.verse.ssbc.App"
 }
